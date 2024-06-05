@@ -1,3 +1,6 @@
+import dataclasses
+from typing import Literal
+
 import aiohttp
 from patreon.utils import user_agent_string
 
@@ -40,3 +43,23 @@ async def make_request(path: str, meth: str, params: dict = None, headers: dict 
             raise PatreonAPIError(f"Error making request to Patreon API: {response.status}")
 
         return await response.json()
+
+
+@dataclasses.dataclass
+class CustomTier:
+    id: str
+    title: str
+    discord_role_ids: list[str]
+
+
+@dataclasses.dataclass
+class CustomPledge:
+    id: str
+    discord_id: str
+    email: str
+    patron_status: Literal['declined_patron'] | Literal['active_patron'] | Literal['former_patron'] | None
+    entitled_tiers: list[CustomTier]
+
+
+async def get_all_pledges() -> CustomPledge:
+    pass
