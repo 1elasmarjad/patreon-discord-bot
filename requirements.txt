@@ -1,0 +1,2 @@
+aiohttp~=3.9.5
+patreon~=0.5.0
