@@ -5,7 +5,7 @@
   "patreon_campaign_id": "123",
   "always_give_roles": [
     {
-      "discord_id": "123",
+      "discord_user_id": "123",
       "discord_role_id": "123"
     }
   ]

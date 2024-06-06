@@ -62,7 +62,7 @@ class CustomPledge:
     entitled_tiers: list[CustomTier]
 
 
-class PatreonPledgesResponse(TypedDict):
+class PatreonResponse(TypedDict):
     data: list[dict]
     included: list[dict]
 
@@ -95,7 +95,7 @@ async def get_all_pledge_data(campaign_id: str | int, per_page: int = 500) -> li
     return pledge_data
 
 
-async def get_pledge_data_from_page(resp_json: PatreonPledgesResponse) -> list[CustomPledge]:
+async def get_pledge_data_from_page(resp_json: PatreonResponse) -> list[CustomPledge]:
     """ Given one pagination page of Patreon pledges, return a list of CustomPledge objects
     :param resp_json: The JSON response from the Patreon API
     :return: A list of CustomPledge objects
@@ -155,3 +155,26 @@ async def get_pledge_data_from_page(resp_json: PatreonPledgesResponse) -> list[C
         pledge_data.append(pledge)
 
     return pledge_data
+
+
+async def get_patreon_tiers(campaign_id: str | int) -> list[CustomTier]:
+    """ Fetches all the tier data for a given campaign
+    """
+    params = {
+        "include": "tiers",
+        'fields[tier]': 'title,discord_role_ids',
+    }
+
+    patreon_resp: PatreonResponse = await make_request(f"/campaigns/{campaign_id}", "GET", params=params)
+
+    all_tiers: list[CustomTier] = []
+
+    for inc_data in patreon_resp["included"]:
+        if inc_data["type"] == "tier":
+            all_tiers.append(CustomTier(
+                id=inc_data["id"],
+                title=inc_data.get("attributes", {}).get("title", ""),
+                discord_role_ids=inc_data.get("attributes", {}).get("discord_role_ids", [])
+            ))
+
+    return all_tiers

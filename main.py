@@ -1,6 +1,8 @@
 from bot import CustomBot
+from cli_commands.exit import exit_command
+from cli_commands.handout import handout_command
+from cli_commands.info import info_command
 from config import ConfigurationManager
-from patreon_api import get_all_pledge_data
 
 discord_bot = CustomBot()
 
@@ -16,26 +18,18 @@ async def on_ready():
 
         match split_data[0]:
             case "exit":
-                await discord_bot.close()
-                exit(0)
+                return await exit_command(discord_bot, *split_data[1:])
 
-            case "info":  # discord info of a user
-                if len(split_data) < 2:
-                    print("Please provide a user ID")
-                    continue
+            case "info":
+                # patreon info given a discord ID
+                await info_command(discord_bot, *split_data[1:])
 
-                discord_id = split_data[1]
+            case "handout":
+                # handout roles to all patrons that are entitled to them and removes roles from those who are not
+                await handout_command(discord_bot, *split_data[1:])
 
-                patreon_data = await get_all_pledge_data(ConfigurationManager().get_config()["patreon_campaign_id"])
-
-                for pledge in patreon_data:
-                    if pledge.discord_id == discord_id:
-                        print(f"Discord ID: {discord_id}")
-                        print(f"Email: {pledge.email}")
-                        print(f"Patron Status: {pledge.patron_status}")
-                        print(
-                            f"Entitled Tiers: {', '.join([f"{tier.title} {tier.discord_role_ids}" for tier in pledge.entitled_tiers])}")
-                        break
+            case "help":
+                print("TODO: not implemented")
 
             case _:
                 print("Unknown command")

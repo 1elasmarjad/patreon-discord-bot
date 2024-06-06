@@ -6,7 +6,7 @@ from discord.abc import Snowflake
 
 
 class AlwaysGiveRole(TypedDict):
-    discord_id: Snowflake
+    discord_user_id: Snowflake
     discord_role_id: str
 
 
