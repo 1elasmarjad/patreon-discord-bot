@@ -1,13 +1,13 @@
-import asyncio
-
+from bot import CustomBot
 from config import ConfigurationManager
-from patreon_api import make_request, get_pledge_data_from_page, get_all_pledge_data
+
+discord_bot = CustomBot()
 
 
-async def main():
-    config = ConfigurationManager().get_config()
-
-    print(len(await get_all_pledge_data(config.patreon_campaign_id)))
+@discord_bot.event
+async def on_ready():
+    print(f"Logged in as {discord_bot.user} ({discord_bot.user.id})")
+    # print(len(await get_all_pledge_data(config.patreon_campaign_id)))
 
     #
     # for x in x['data']:
@@ -20,4 +20,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    config = ConfigurationManager().get_config()
+    print("Starting bot...")
+    discord_bot.run(config["discord_access_token"])

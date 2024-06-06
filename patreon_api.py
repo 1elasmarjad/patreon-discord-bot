@@ -8,7 +8,7 @@ from patreon.utils import user_agent_string
 from config import ConfigurationManager
 
 _auth_headers = {
-    'Authorization': f"Bearer {ConfigurationManager().get_config().patreon_access_token}",
+    'Authorization': f"Bearer {ConfigurationManager().get_config()["patreon_access_token"]}",
     'User-Agent': user_agent_string()
 }
 
@@ -84,13 +84,13 @@ async def get_all_pledge_data(campaign_id: str | int, per_page: int = 500) -> li
         'fields[user]': 'social_connections',
     }
 
-    initial = await make_request(f"/campaigns/{campaign_id}/members", "GET", params=params)
+    # initial request
+    patreon_resp = await make_request(f"/campaigns/{campaign_id}/members", "GET", params=params)
 
-    pledge_data = await get_pledge_data_from_page(initial)
-
-    while next_page := initial.get("links", {}).get("next"):
-        initial = await make_request(next_page, "GET", params=params)
-        pledge_data.extend(await get_pledge_data_from_page(initial))
+    pledge_data = await get_pledge_data_from_page(patreon_resp)  # get all the pledges from the initial page
+    while next_page := patreon_resp.get("links", {}).get("next"):
+        patreon_resp = await make_request(next_page, "GET", params=params)
+        pledge_data.extend(await get_pledge_data_from_page(patreon_resp))
 
     return pledge_data
 
@@ -155,7 +155,3 @@ async def get_pledge_data_from_page(resp_json: PatreonPledgesResponse) -> list[C
         pledge_data.append(pledge)
 
     return pledge_data
-
-
-async def get_all_pledges() -> CustomPledge:
-    pass

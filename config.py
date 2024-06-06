@@ -1,17 +1,25 @@
-import dataclasses
 import json
 from functools import cache
+from typing import Optional, TypedDict
+
+from discord.abc import Snowflake
 
 
-@dataclasses.dataclass
-class ConfigData:
+class AlwaysGiveRole(TypedDict):
+    discord_id: Snowflake
+    discord_role_id: str
+
+
+class ConfigData(TypedDict):
     guild_id: str
     discord_access_token: str
     patreon_access_token: str
     patreon_campaign_id: str
+    always_give_roles: Optional[list[AlwaysGiveRole]]
 
 
 class ConfigurationManager:
+    __cache: Optional[ConfigData] = None
 
     @classmethod
     @cache
@@ -21,11 +29,9 @@ class ConfigurationManager:
         """
         # read configuration.json
         with open('configuration.json') as f:
-            config = json.load(f)
+            if cls.__cache:
+                return cls.__cache
 
-            try:
-                data = ConfigData(**config)
-                cls.__cache = data
-                return data
-            except TypeError:
-                raise ValueError("Invalid configuration file, please check configuration.example.json")
+            config = json.load(f)
+            cls.__cache = config
+            return config
